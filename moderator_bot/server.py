@@ -10,7 +10,7 @@ from .giphy import GiphyClient
 from .handlers import MainHandler
 from .router import setup_main_handler
 from .settings import GIPHY_API_KEY, MAX_WORKERS, PROJECT_ROOT, SLACK_BOT_TOKEN
-from .utils import load_config, setup_executor
+from .utils import load_config
 from .worker import warm
 
 
@@ -36,10 +36,10 @@ def setup_startup_hooks(loop, executor, model_path, workers_count):
 async def init_application(loop, config):
     app = web.Application(loop=loop, debug=config["debug"])
 
-    executor = await setup_executor(MAX_WORKERS).__aenter__()
+    executor = ProcessPoolExecutor(MAX_WORKERS)
 
     slack_client = Slacker(SLACK_BOT_TOKEN)
-    giphy_client = GiphyClient(loop, GIPHY_API_KEY)
+    giphy_client = GiphyClient(loop, GIPHY_API_KEY, config["request_timeout"])
 
     handler = MainHandler(
         loop,
@@ -53,7 +53,11 @@ async def init_application(loop, config):
     setup_main_handler(app, handler)
 
     app.on_startup.append(setup_startup_hooks(
-        loop, executor, model_path, MAX_WORKERS))
+        loop,
+        executor,
+        model_path,
+        MAX_WORKERS,
+    ))
 
     app.on_cleanup.append(setup_cleanup_hooks([
         partial(executor.shutdown, wait=True),

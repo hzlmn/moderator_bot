@@ -9,6 +9,8 @@ aioslacker = "*"
 pyyaml = "*"
 sklearn = "*"
 numpy = "*"
+pytest = "*"
+pytest-aiohttp = "*"
 
 [dev-packages]
 

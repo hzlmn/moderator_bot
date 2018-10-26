@@ -40,6 +40,5 @@ class MainHandler:
 
     async def _message_handler(self, event):
         scores = await self._run(predict, event["text"])
-        print(event)
         if np.average(scores) >= self._danger_index:
             await self._respond(event)
