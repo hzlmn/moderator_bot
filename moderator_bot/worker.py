@@ -1,8 +1,12 @@
 import pickle
+from collections import namedtuple
 
 import numpy as np
 
 _model = None
+
+Scores = namedtuple("Scores", ["toxic", "severe_toxic",
+                               "obscence", "insult", "identity_hate"])
 
 
 def warm(model_path):
@@ -16,4 +20,5 @@ def warm(model_path):
 
 def predict(message):
     results = _model.predict_proba([message])
-    return np.array(results).T[1].tolist()
+    results = np.array(results).T[1].tolist()[0]
+    return Scores(*results)

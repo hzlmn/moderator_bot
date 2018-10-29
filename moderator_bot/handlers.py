@@ -12,7 +12,7 @@ class MainHandler:
         self.executor = executor
         self.slack_client = slack_client
         self.giphy_client = giphy_client
-        self._danger_index = 0.5
+        self._toxicity_index = 0.4
         self._run = partial(self.loop.run_in_executor, self.executor)
 
     async def listen_message(self, request):
@@ -40,5 +40,5 @@ class MainHandler:
 
     async def _message_handler(self, event):
         scores = await self._run(predict, event["text"])
-        if np.average(scores) >= self._danger_index:
+        if np.average([scores.toxic, scores.insult]) >= self._toxicity_index:
             await self._respond(event)
